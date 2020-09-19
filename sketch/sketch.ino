@@ -49,7 +49,7 @@ void read_ds18b20() {
 // Populates and prints the serial message
 void print_serial_package() {
   sprintf(
-    package, "#s%d,%d,%d,%d,t%.2f,d%.2f,%.2f", 
+    package, "{\"soil\":[%d,%d,%d,%d],\"temp\":[%d],\"humid\":[%d,%d]}",
     soil_1_val, soil_2_val, soil_3_val, soil_4_val,
     ds_1_temp,
     dht11_temp, dht11_humid
@@ -57,15 +57,22 @@ void print_serial_package() {
   Serial.println(package);
 }
 
+void blink(int ms) {
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(ms);
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
 void setup() {
   Serial.begin(9600);
-  sensors.begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+  // sensors.begin();
 }
 
 void loop() {
   read_soil_sensors();
-  read_dht11();
-  read_ds18b20();
+  //read_dht11();
+  //read_ds18b20();
   print_serial_package();
-  delay(10);
+  blink(500);
 }
