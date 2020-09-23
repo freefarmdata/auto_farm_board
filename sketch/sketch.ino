@@ -15,15 +15,16 @@ int soil_4_val = 1024;
 
 dht11 DHT11;
 int dht11_pin = 4;
-float dht11_temp = 0.0;
-float dht11_humid = 0.0;
+char dht11_temp[10] = {0};
+char dht11_humid[10] = {0};
 
 int ds18b20_pin = 2;
 OneWire one_wire(ds18b20_pin);
 DallasTemperature sensors(&one_wire);
-float ds_1_temp = 0.0;
+char ds_1_temp[10] = {0};
+char ds_2_temp[10] = {0};
 
-char package[100] = {0};
+char package[200] = {0};
 
 // Reads the capacitive soil sensors
 void read_soil_sensors() {
@@ -36,23 +37,28 @@ void read_soil_sensors() {
 // Reads the DHT11 for the temperature and humidity readings
 void read_dht11() {
   DHT11.read(dht11_pin);
-  dht11_temp = (float)DHT11.humidity;
-  dht11_humid = (float)DHT11.humidity;
+  float t = (float)DHT11.temperature;
+  float h = (float)DHT11.humidity;
+  dtostrf(t, 3, 1, dht11_temp);
+  dtostrf(h, 3, 1, dht11_humid);
 }
 
 // Reads the one wire ds18b20 devices for temperature
 void read_ds18b20() {
   sensors.requestTemperatures();
-  ds_1_temp = sensors.getTempCByIndex(0);
+  float v1 = sensors.getTempCByIndex(0);
+  float v2 = sensors.getTempCByIndex(1);
+  dtostrf(v1, 6, 3, ds_1_temp);
+  dtostrf(v2, 6, 3, ds_2_temp);
 }
 
 // Populates and prints the serial message
 void print_serial_package() {
   sprintf(
-    package, "{\"soil\":[%d,%d,%d,%d],\"temp\":[%d],\"humid\":[%d,%d]}",
+    package, "{\"soil\":[%d,%d,%d,%d],\"temp\":[%s, %s]},\"humid\":[%s,%s]}",
     soil_1_val, soil_2_val, soil_3_val, soil_4_val,
-    ds_1_temp,
-    dht11_temp, dht11_humid
+    ds_1_temp, ds_2_temp,
+    dht11_humid, dht11_temp
   );
   Serial.println(package);
 }
@@ -64,15 +70,15 @@ void blink(int ms) {
 }
 
 void setup() {
-  Serial.begin(9600);
+  sensors.begin();
   pinMode(LED_BUILTIN, OUTPUT);
-  // sensors.begin();
+  Serial.begin(9600);
 }
 
 void loop() {
   read_soil_sensors();
-  //read_dht11();
-  //read_ds18b20();
+  read_dht11();
+  read_ds18b20();
   print_serial_package();
   blink(500);
 }
