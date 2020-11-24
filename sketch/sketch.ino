@@ -55,7 +55,7 @@ void read_ds18b20() {
 // Populates and prints the serial message
 void print_serial_package() {
   sprintf(
-    package, "{\"soil\":[%d,%d,%d,%d],\"temp\":[%s, %s]},\"humid\":[%s,%s]}",
+    package, "{\"soil\":[%d,%d,%d,%d],\"temp\":[%s,%s],\"humid\":[%s,%s]}",
     soil_1_val, soil_2_val, soil_3_val, soil_4_val,
     ds_1_temp, ds_2_temp,
     dht11_humid, dht11_temp
