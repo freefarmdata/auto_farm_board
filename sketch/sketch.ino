@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dht11.h>
-#include <OneWire.h> 
+#include <OneWire.h>
+#include <Wire.h>
+#include <BH1750.h>
 #include "DallasTemperature.h"
 
 int soil_1_pin = 0;
@@ -13,16 +15,16 @@ int soil_2_val = 1024;
 int soil_3_val = 1024;
 int soil_4_val = 1024;
 
-dht11 DHT11;
-int dht11_pin = 4;
-char dht11_temp[10] = {0};
-char dht11_humid[10] = {0};
-
 int ds18b20_pin = 2;
 OneWire one_wire(ds18b20_pin);
 DallasTemperature sensors(&one_wire);
 char ds_1_temp[10] = {0};
 char ds_2_temp[10] = {0};
+
+BH1750 light_sensor_one;
+BH1750 light_sensor_two;
+char light_one[10] = {0};
+char light_two[10] = {0};
 
 char package[200] = {0};
 
@@ -32,6 +34,14 @@ void read_soil_sensors() {
   soil_2_val = analogRead(soil_2_pin);
   soil_3_val = analogRead(soil_3_pin);
   soil_4_val = analogRead(soil_4_pin);
+}
+
+// Reads the BH1750 lux sensors
+void read_bh1750() {
+  float v1 = light_sensor_one.readLightLevel();
+  float v2 = light_sensor_two.readLightLevel();
+  dtostrf(v1, 6, 3, light_one);
+  dtostrf(v2, 6, 3, light_two);
 }
 
 // Reads the DHT11 for the temperature and humidity readings
@@ -71,13 +81,17 @@ void blink(int ms) {
 
 void setup() {
   sensors.begin();
+  Wire.begin();
+  light_sensor_one.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, 0x23);
+  light_sensor_two.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, 0x5c);
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
+  delay(2000);
 }
 
 void loop() {
   read_soil_sensors();
-  read_dht11();
+  read_bh1750();
   read_ds18b20();
   print_serial_package();
   blink(500);
