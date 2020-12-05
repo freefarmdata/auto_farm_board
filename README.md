@@ -10,9 +10,23 @@ via serial input.
 
 ## Serial Output
 
-Serial output follows this simple format as interpreted
-by sprintf:
+Serial output is in JSON format. Like so:
+```json
+{"temp":[1.23, 4.56],"pressure":[1.23,4.56]}
 ```
-#s[%d,%d,%d,%d] t[%.2f] h[%.2f,%.2f]#
+
+There may be other output for error reasons, but a basic parser in python looks like
+```python
+def read_sensors(self):
+    output = serial.read(1000).decode("utf-8")
+    output = list(map(lambda l: l.strip(), output.split('\n')))
+    messages = []
+    for line in output:
+    try:
+        messages.append(json.loads(line))
+    except Exception as e:
+        pass
+    return messages
 ```
+its okay if an exception is thrown. Most likely a normal thing that you can ignore.
 
